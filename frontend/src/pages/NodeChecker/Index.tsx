@@ -26,6 +26,7 @@ export function NodeCheckerPage() {
     undefined,
   );
   const [publicKeyRequired, setPublicKeyRequired] = useState<boolean>(true);
+  const [metricsPortRequired, setMetricsPortRequired] = useState<boolean>(true);
 
   // Used for getting the text field values from the URL and updating the query params
   // when the user hits the "Check Node" button.
@@ -55,6 +56,14 @@ export function NodeCheckerPage() {
     validatePortInput: validateNoisePortInput,
   } = usePortInput(searchParams.get("noisePort") || "6180");
 
+  // Metrics port text input field.
+  const {
+    port: metricsPort,
+    setPort: setMetricsPort,
+    renderPortTextField: renderMetricsPortTextField,
+    validatePortInput: validateMetricsPortInput,
+  } = usePortInput(searchParams.get("metricsPort") || "9101");
+
   // Public key text input field.
   const {
     addr: publicKey,
@@ -70,6 +79,9 @@ export function NodeCheckerPage() {
     const urlIsValid = validateUrlInput();
     const apiPortIsValid = validateApiPortInput();
     const noisePortIsValid = validateNoisePortInput();
+    const metricsPortIsValid = metricsPortRequired
+      ? validateMetricsPortInput()
+      : true;
     const publicKeyIsValid = publicKeyRequired
       ? validatePublicKeyAddressInput()
       : true;
@@ -78,6 +90,7 @@ export function NodeCheckerPage() {
       apiPortIsValid &&
       noisePortIsValid &&
       publicKeyIsValid &&
+      metricsPortIsValid &&
       baselineConfiguration !== undefined
     );
   };
@@ -90,6 +103,7 @@ export function NodeCheckerPage() {
     updateBaselineConfiguration(configuration);
     const evaluators = configuration?.evaluators ?? [];
     setPublicKeyRequired(evaluators.includes("noise_handshake"));
+    setMetricsPortRequired((configuration?.name ?? "").includes("with_metrics"));
   };
 
   const onCheckNodeButtonClick = async () => {
@@ -105,6 +119,7 @@ export function NodeCheckerPage() {
       url: url,
       apiPort: apiPort,
       noisePort: noisePort,
+      metricsPort: metricsPort,
       publicKey: publicKey,
       baselineConfiguration: baselineConfiguration!.name,
     });
@@ -116,6 +131,7 @@ export function NodeCheckerPage() {
         // TODO: Somehow make these port values numbers to begin with.
         apiPort: parseInt(apiPort),
         noisePort: parseInt(noisePort),
+        metricsPort: metricsPortRequired ? parseInt(metricsPort) : undefined,
         publicKey: publicKey == "" ? undefined : publicKey,
       });
       updateEvaluationSummary(evaluationSummary);
@@ -138,6 +154,7 @@ export function NodeCheckerPage() {
     setUrl(searchParams.get("url") || "");
     setApiPort(searchParams.get("apiPort") || "443");
     setNoisePort(searchParams.get("noisePort") || "6180");
+    setMetricsPort(searchParams.get("metricsPort") || "9101");
     setPublicKey(searchParams.get("publicKey") || "");
   }, [state.network_name, searchParams]);
 
@@ -148,6 +165,16 @@ export function NodeCheckerPage() {
     publicKeyInput = (
       <Grid item md={12}>
         {renderPublicKeyTextField("Public Key")}
+      </Grid>
+    );
+  }
+
+  // Same for the metrics port input.
+  let metricsPortInput = null;
+  if (metricsPortRequired) {
+    metricsPortInput = (
+      <Grid item md={1.1} xs={12}>
+        {renderMetricsPortTextField("Metrics Port")}
       </Grid>
     );
   }
@@ -190,19 +217,20 @@ export function NodeCheckerPage() {
           <Grid item md={5} xs={12}>
             {renderUrlTextField("Node URL")}
           </Grid>
-          <Grid item md={1.5} xs={12}>
+          <Grid item md={1.1} xs={12}>
             {renderApiPortTextField("API Port")}
           </Grid>
-          <Grid item md={1.5} xs={12}>
+          <Grid item md={1.1} xs={12}>
             {renderNoisePortTextField("Noise Port")}
           </Grid>
-          <Grid item md={4} xs={12}>
+          <Grid item md={3.5} xs={12}>
             <ConfigurationSelect
               baselineConfiguration={baselineConfiguration}
               updateBaselineConfiguration={updateBaselineConfigurationWrapper}
               updateErrorMessage={updateErrorMessage}
             />
           </Grid>
+          {metricsPortInput}
           {publicKeyInput}
           <Grid item xs={12}>
             {checkNodeButton}

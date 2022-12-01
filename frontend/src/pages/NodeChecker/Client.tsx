@@ -28,6 +28,7 @@ export async function checkNode({
   baselineConfigurationName,
   apiPort,
   noisePort,
+  metricsPort,
   publicKey,
 }: {
   nhcUrl: string;
@@ -35,6 +36,7 @@ export async function checkNode({
   baselineConfigurationName?: string | undefined;
   apiPort?: number | undefined;
   noisePort?: number | undefined;
+  metricsPort?: number | undefined;
   publicKey?: string | undefined;
 }): Promise<EvaluationSummary> {
   const client = getClient(nhcUrl);
@@ -43,6 +45,7 @@ export async function checkNode({
     baselineConfigurationName,
     apiPort,
     noisePort,
+    metricsPort,
     publicKey,
   });
 }
@@ -62,7 +65,7 @@ export async function getConfigurations({
   const client = getClient(nhcUrl);
   let configurations = await client.default.getGetConfigurations();
   configurations.sort((a, b) =>
-    b.configuration_name.localeCompare(a.configuration_name),
+    a.configuration_name.localeCompare(b.configuration_name),
   );
   let out = new Map<string, MinimalConfiguration>();
   for (const configuration of configurations) {
