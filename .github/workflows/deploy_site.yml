@@ -12,11 +12,16 @@ jobs:
   build_web:
     runs-on: ubuntu-latest
     concurrency: ci-${{ github.ref }}
+    defaults:
+      run:
+        working-directory: ./frontend
     steps:
     - uses: actions/checkout@v3
 
     # Install pnpm
     - uses: pnpm/action-setup@v2
+      with:
+        path: frontend/build
 
     # Switch to the frontend and build.
     - run: cd frontend && pnpm build
