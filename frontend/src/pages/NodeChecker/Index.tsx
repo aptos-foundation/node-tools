@@ -10,7 +10,7 @@ import ConfigurationSelect from "./ConfigurationSelect";
 import {useGlobalState} from "../../GlobalState";
 import ErrorSnackbar from "./ErrorSnackbar";
 import useAddressInput from "../../api/hooks/useAddressInput";
-import { useSearchParams } from 'react-router-dom';
+import {useSearchParams} from "react-router-dom";
 
 export function NodeCheckerPage() {
   const [state, _dispatch] = useGlobalState();
@@ -105,6 +105,7 @@ export function NodeCheckerPage() {
       url: url,
       apiPort: apiPort,
       noisePort: noisePort,
+      baselineConfiguration: baselineConfiguration!.name,
     });
     try {
       const evaluationSummary = await checkNode({

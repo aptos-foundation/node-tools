@@ -1,8 +1,7 @@
 import {EvaluationSummary, NodeCheckerClient} from "aptos-node-checker-client";
 import {GlobalState} from "../../GlobalState";
 
-export const DEFAULT_NHC_INSTANCE =
-  "https://node-checker.dev.gcp.aptosdev.com";
+export const DEFAULT_NHC_INSTANCE = "https://node-checker.dev.gcp.aptosdev.com";
 
 export const NHC_INSTANCE_OVERRIDES = {
   local: "http://127.0.0.1:20121",

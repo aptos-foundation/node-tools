@@ -11,6 +11,7 @@ import {
   MinimalConfiguration,
 } from "./Client";
 import {useGlobalState} from "../../GlobalState";
+import {useSearchParams} from "react-router-dom";
 
 interface ConfigurationSelectProps {
   baselineConfiguration: MinimalConfiguration | undefined;
@@ -31,6 +32,8 @@ export default function ConfigurationSelect({
     Map<string, MinimalConfiguration> | undefined
   >(undefined);
 
+  const [searchParams, _setSearchParams] = useSearchParams();
+
   const handleChange = (event: SelectChangeEvent<string>) => {
     const configurationKey = event.target.value;
     updateBaselineConfiguration(validConfigurations!.get(configurationKey));
@@ -47,7 +50,16 @@ export default function ConfigurationSelect({
     getConfigurations({nhcUrl: nhcUrl})
       .then((configurations) => {
         updateValidConfigurations(configurations);
-        updateBaselineConfiguration(configurations.values().next().value);
+        // If a configuration was included in the URL and it is a valid option,
+        // use that. Otherwise just use the first one.
+        if (searchParams.get("baselineConfiguration")) {
+          const configurationKey = searchParams.get("baselineConfiguration")!;
+          if (configurations.has(configurationKey)) {
+            updateBaselineConfiguration(configurations.get(configurationKey));
+          }
+        } else {
+          updateBaselineConfiguration(configurations.values().next().value);
+        }
         updateErrorMessage(undefined);
       })
       .catch((_error) => {
