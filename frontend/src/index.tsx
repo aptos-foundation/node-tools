@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {BrowserRouter} from "react-router-dom";
+import {HashRouter} from "react-router-dom";
 import {QueryClient, QueryClientProvider} from "react-query";
 import NodeToolsRoutes from "./NodeToolsRoutes";
 
@@ -13,14 +13,15 @@ declare global {
 
 const queryClient = new QueryClient();
 
-// delay rendering the application until the window.onload event has fired when integrating with the window.aptos API
+// Delay rendering the application until the window.onload event has fired when integrating with the window.aptos API
+// Note: HashRouter is only needed because of GH pages, otherwise we should use BrowserRouter.
 window.addEventListener("load", () => {
   ReactDOM.render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        <HashRouter>
           <NodeToolsRoutes />
-        </BrowserRouter>
+        </HashRouter>
       </QueryClientProvider>
     </React.StrictMode>,
     document.getElementById("root"),

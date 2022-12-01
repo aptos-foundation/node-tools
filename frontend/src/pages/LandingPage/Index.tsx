@@ -12,7 +12,7 @@ export default function LandingPage() {
       <h2>BETA</h2>
       <DividerHero/>
       <Grid item xs={12} md={6} lg={4} key={1}>
-        <a href="/node_checker" style={{ textDecoration: 'none' }}>
+        <a href="/#/node_checker" style={{ textDecoration: 'none' }}>
           <Button variant="primary">Node Checker</Button>
         </a>
       </Grid>
