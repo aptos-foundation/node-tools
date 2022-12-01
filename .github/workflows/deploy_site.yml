@@ -15,11 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    # Install yarn
-    - run: npm install -g yarn
+    # Install pnpm
+    - uses: pnpm/action-setup@v2
 
     # Switch to the frontend and build.
-    - run: cd frontend && yarn build
+    - run: cd frontend && pnpm build
 
     # Upload the artifact.
     - uses: actions/upload-pages-artifact@v1

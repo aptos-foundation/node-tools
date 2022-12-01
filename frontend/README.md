@@ -1,17 +1,13 @@
-# Aptos Explorer
+# Aptos Node Tools Frontend
 
-## How to use
-
-Clone the repo. Requires [yarn](https://classic.yarnpkg.com/en/docs/install)
-
+## Getting started
 
 Install dependencies:
 ```sh
-yarn install
+pnpm install
 ```
-
 Run below to start the app:
 
 ```sh
-yarn start
+pnpm start
 ```

@@ -11,7 +11,7 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-export default function ExplorerLayout({children}: LayoutProps) {
+export default function NodeToolsLayout({children}: LayoutProps) {
   return (
     <ProvideColorMode>
       <CssBaseline />

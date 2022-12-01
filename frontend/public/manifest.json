@@ -1,6 +1,6 @@
 {
-  "short_name": "Aptos Explorer",
-  "name": "Aptos Block Explorer",
+  "short_name": "Aptos Node Tools",
+  "name": "Aptos Node Tools",
   "icons": [
     {
       "src": "favicon.ico",

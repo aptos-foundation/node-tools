@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import {BrowserRouter} from "react-router-dom";
 import {QueryClient, QueryClientProvider} from "react-query";
-import ExplorerRoutes from "./ExplorerRoutes";
+import NodeToolsRoutes from "./NodeToolsRoutes";
 
 // Inform the compiler of the existence of the window.aptos API
 declare global {
@@ -19,7 +19,7 @@ window.addEventListener("load", () => {
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <ExplorerRoutes />
+          <NodeToolsRoutes />
         </BrowserRouter>
       </QueryClientProvider>
     </React.StrictMode>,
