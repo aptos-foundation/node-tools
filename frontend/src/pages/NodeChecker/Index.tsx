@@ -34,7 +34,7 @@ export function NodeCheckerPage() {
   // URL text input field.
   const {
     url,
-    clearUrl: _clearUrl,
+    setUrl,
     renderUrlTextField,
     validateUrlInput,
   } = useUrlInput(searchParams.get("url") || "");
@@ -42,7 +42,7 @@ export function NodeCheckerPage() {
   // API port text input field.
   const {
     port: apiPort,
-    clearPort: _clearApiPort,
+    setPort: setApiPort,
     renderPortTextField: renderApiPortTextField,
     validatePortInput: validateApiPortInput,
   } = usePortInput(searchParams.get("apiPort") || "443");
@@ -50,7 +50,7 @@ export function NodeCheckerPage() {
   // Noise port text input field.
   const {
     port: noisePort,
-    clearPort: _clearNoisePort,
+    setPort: setNoisePort,
     renderPortTextField: renderNoisePortTextField,
     validatePortInput: validateNoisePortInput,
   } = usePortInput(searchParams.get("noisePort") || "6180");
@@ -58,10 +58,10 @@ export function NodeCheckerPage() {
   // Public key text input field.
   const {
     addr: publicKey,
-    clearAddr: _clearPublicKey,
+    setAddr: setPublicKey,
     renderAddressTextField: renderPublicKeyTextField,
     validateAddressInput: validatePublicKeyAddressInput,
-  } = useAddressInput();
+  } = useAddressInput(searchParams.get("publicKey") || "");
 
   const nhcUrl = determineNhcUrl(state);
 
@@ -105,6 +105,7 @@ export function NodeCheckerPage() {
       url: url,
       apiPort: apiPort,
       noisePort: noisePort,
+      publicKey: publicKey,
       baselineConfiguration: baselineConfiguration!.name,
     });
     try {
@@ -129,11 +130,16 @@ export function NodeCheckerPage() {
     updateChecking(false);
   };
 
-  // Clear the results if the user changes the network.
+  // Clear the results if the user changes the network or the search params.
+  // Update the fields.
   useEffect(() => {
     updateEvaluationSummary(undefined);
     updateErrorMessage(undefined);
-  }, [state.network_name]);
+    setUrl(searchParams.get("url") || "");
+    setApiPort(searchParams.get("apiPort") || "443");
+    setNoisePort(searchParams.get("noisePort") || "6180");
+    setPublicKey(searchParams.get("publicKey") || "");
+  }, [state.network_name, searchParams]);
 
   // Conditionally build an input field for the public key if the selected
   // baseline configuration has an evaluator that requires it.

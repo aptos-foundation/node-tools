@@ -45,7 +45,7 @@ const useUrlInput = (initialValue: string) => {
     return isValid;
   }
 
-  return {url, clearUrl, renderUrlTextField, validateUrlInput};
+  return {url, setUrl, renderUrlTextField, validateUrlInput};
 };
 
 export default useUrlInput;

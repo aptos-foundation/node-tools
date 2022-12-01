@@ -46,7 +46,7 @@ const usePortInput = (initialValue: string) => {
     return isValid;
   }
 
-  return {port, clearPort, renderPortTextField, validatePortInput};
+  return {port, setPort, renderPortTextField, validatePortInput};
 };
 
 export default usePortInput;

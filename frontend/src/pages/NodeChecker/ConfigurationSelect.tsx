@@ -69,7 +69,7 @@ export default function ConfigurationSelect({
         updateBaselineConfiguration(undefined);
         updateValidConfigurations(undefined);
       });
-  }, [state.network_name]);
+  }, [state.network_name, searchParams]);
 
   function DropdownIcon(props: SvgIconProps) {
     return (

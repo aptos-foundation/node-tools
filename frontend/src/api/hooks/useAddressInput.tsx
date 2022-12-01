@@ -2,8 +2,8 @@ import React, {useState, useEffect} from "react";
 import AddressTextField from "../../components/AddressTextField";
 import {isValidAccountAddress} from "../../pages/utils";
 
-const useAddressInput = () => {
-  const [addr, setAddr] = useState<string>("");
+const useAddressInput = (initialValue: string) => {
+  const [addr, setAddr] = useState<string>(initialValue);
   const [addrIsValid, setAddrIsValid] = useState<boolean>(true);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const useAddressInput = () => {
     return isValid;
   }
 
-  return {addr, clearAddr, renderAddressTextField, validateAddressInput};
+  return {addr, setAddr, renderAddressTextField, validateAddressInput};
 };
 
 export default useAddressInput;
