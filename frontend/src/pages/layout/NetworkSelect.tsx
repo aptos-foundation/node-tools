@@ -164,7 +164,6 @@ export default function NetworkSelect() {
               color={grey[450]}
             >
               <Typography variant="body2">Network</Typography>
-              <Typography variant="body2">Chain ID</Typography>
             </Stack>
           </MenuItem>
           {Object.keys(networks).map((networkName: string) => (
