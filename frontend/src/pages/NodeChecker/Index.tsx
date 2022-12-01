@@ -10,6 +10,7 @@ import ConfigurationSelect from "./ConfigurationSelect";
 import {useGlobalState} from "../../GlobalState";
 import ErrorSnackbar from "./ErrorSnackbar";
 import useAddressInput from "../../api/hooks/useAddressInput";
+import { useSearchParams } from 'react-router-dom';
 
 export function NodeCheckerPage() {
   const [state, _dispatch] = useGlobalState();
@@ -26,13 +27,17 @@ export function NodeCheckerPage() {
   );
   const [publicKeyRequired, setPublicKeyRequired] = useState<boolean>(true);
 
+  // Used for getting the text field values from the URL and updating the query params
+  // when the user hits the "Check Node" button.
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // URL text input field.
   const {
     url,
     clearUrl: _clearUrl,
     renderUrlTextField,
     validateUrlInput,
-  } = useUrlInput();
+  } = useUrlInput(searchParams.get("url") || "");
 
   // API port text input field.
   const {
@@ -40,7 +45,7 @@ export function NodeCheckerPage() {
     clearPort: _clearApiPort,
     renderPortTextField: renderApiPortTextField,
     validatePortInput: validateApiPortInput,
-  } = usePortInput("8080");
+  } = usePortInput(searchParams.get("apiPort") || "443");
 
   // Noise port text input field.
   const {
@@ -48,7 +53,7 @@ export function NodeCheckerPage() {
     clearPort: _clearNoisePort,
     renderPortTextField: renderNoisePortTextField,
     validatePortInput: validateNoisePortInput,
-  } = usePortInput("6180");
+  } = usePortInput(searchParams.get("noisePort") || "6180");
 
   // Public key text input field.
   const {
@@ -95,6 +100,12 @@ export function NodeCheckerPage() {
       return;
     }
     updateChecking(true);
+    setSearchParams({
+      network: state.network_name,
+      url: url,
+      apiPort: apiPort,
+      noisePort: noisePort,
+    });
     try {
       const evaluationSummary = await checkNode({
         nhcUrl: nhcUrl,

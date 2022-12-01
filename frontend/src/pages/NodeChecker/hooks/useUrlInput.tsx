@@ -11,8 +11,8 @@ function isValidUrl(url: string): boolean {
   return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
 }
 
-const useUrlInput = () => {
-  const [url, setUrl] = useState<string>("");
+const useUrlInput = (initialValue: string) => {
+  const [url, setUrl] = useState<string>(initialValue);
   const [urlIsValid, setUrlIsValid] = useState<boolean>(true);
 
   useEffect(() => {
