@@ -1,0 +1,45 @@
+name: Deploy Site
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  # Build web and upload the artifact.
+  build_web:
+    runs-on: ubuntu-latest
+    concurrency: ci-${{ github.ref }}
+    steps:
+    - uses: actions/checkout@v3
+
+    # Install yarn
+    - run: npm install -g yarn
+
+    # Switch to the frontend and build.
+    - run: cd frontend && yarn build
+
+    # Upload the artifact.
+    - uses: actions/upload-pages-artifact@v1
+      with:
+        path: frontend/build
+
+
+  # Deploy web using the artifact from the previous job.
+  deploy_web:
+    runs-on: ubuntu-latest
+    needs: [build_web]
+    concurrency: ci-${{ github.ref }}
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - uses: actions/configure-pages@v1
+    - id: deployment
+      uses: actions/deploy-pages@v1
+
