@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {HashRouter} from "react-router-dom";
+import {HashRouter, Route} from "react-router-dom";
 import {QueryClient, QueryClientProvider} from "react-query";
 import NodeToolsRoutes from "./NodeToolsRoutes";
 
