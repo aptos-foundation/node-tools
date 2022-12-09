@@ -3,6 +3,7 @@ import {ThemeOptions} from "@mui/material/styles";
 import "@mui/material/styles/createPalette";
 import {alpha} from "@mui/material";
 import {grey, primary} from "./colors/aptosColorPalette";
+import {lightBlue} from '@mui/material/colors'
 
 // Button variants
 declare module "@mui/material/Button" {
@@ -66,7 +67,6 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
   shape: {
     borderRadius: 12,
   },
-  //
 
   typography: {
     fontFamily: `lft-etica-mono,ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace`,
@@ -182,6 +182,17 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
             main: grey[800],
             lighter: grey[700],
           },
+
+          // TODO: Why doesn't this work to change the link color in dark mode?
+          action: {
+            active: lightBlue[200],
+            hover: lightBlue[100],
+            hoverOpacity: 0.7,
+            focus: lightBlue[600],
+            focusOpacity: 1,
+            selected: lightBlue[300],
+            selectedOpacity: 1
+          }
         }),
   },
 
