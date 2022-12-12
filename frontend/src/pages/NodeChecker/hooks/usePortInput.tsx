@@ -3,6 +3,9 @@ import PortTextField from "../../../components/PortTextField";
 
 function isValidPort(port: string): boolean {
   let portNumber;
+  if (port === "") {
+    return true;
+  }
   try {
     portNumber = parseInt(port);
   } catch (_) {

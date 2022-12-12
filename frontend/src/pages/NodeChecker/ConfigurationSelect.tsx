@@ -5,18 +5,15 @@ import MenuItem from "@mui/material/MenuItem";
 import SvgIcon, {SvgIconProps} from "@mui/material/SvgIcon";
 import Box from "@mui/material/Box";
 import {grey} from "../../themes/colors/aptosColorPalette";
-import {
-  determineNhcUrl,
-  getConfigurations,
-  MinimalConfiguration,
-} from "./Client";
+import {determineNhcUrl, getConfigurations} from "./Client";
+import {ConfigurationDescriptor} from "aptos-node-checker-client";
 import {useGlobalState} from "../../GlobalState";
 import {useSearchParams} from "react-router-dom";
 
 interface ConfigurationSelectProps {
-  baselineConfiguration: MinimalConfiguration | undefined;
+  baselineConfiguration: ConfigurationDescriptor | undefined;
   updateBaselineConfiguration: (
-    configuration: MinimalConfiguration | undefined,
+    configuration: ConfigurationDescriptor | undefined,
   ) => void;
   updateErrorMessage: (message: string | undefined) => void;
 }
@@ -29,7 +26,7 @@ export default function ConfigurationSelect({
   const [state, _dispatch] = useGlobalState();
 
   const [validConfigurations, updateValidConfigurations] = useState<
-    Map<string, MinimalConfiguration> | undefined
+    Map<string, ConfigurationDescriptor> | undefined
   >(undefined);
 
   const [searchParams, _setSearchParams] = useSearchParams();
@@ -52,20 +49,26 @@ export default function ConfigurationSelect({
         updateValidConfigurations(configurations);
         // If a configuration was included in the URL and it is a valid option,
         // use that. Otherwise just use the first one.
-        if (searchParams.get("baselineConfiguration")) {
-          const configurationKey = searchParams.get("baselineConfiguration")!;
+        if (searchParams.get("baselineConfig")) {
+          const configurationKey = searchParams.get("baselineConfig")!;
           if (configurations.has(configurationKey)) {
             updateBaselineConfiguration(configurations.get(configurationKey));
+          } else {
+            updateBaselineConfiguration(configurations.values().next().value);
           }
         } else {
           updateBaselineConfiguration(configurations.values().next().value);
         }
         updateErrorMessage(undefined);
       })
-      .catch((_error) => {
+      .catch((error) => {
         updateErrorMessage(
           `Failed to connect to Node Health Checker at ${nhcUrl}`,
         );
+        console.log(
+          `Failed to connect to Node Health Checker at ${nhcUrl}: ${error}`,
+        );
+        console.trace(error);
         updateBaselineConfiguration(undefined);
         updateValidConfigurations(undefined);
       });
@@ -84,9 +87,9 @@ export default function ConfigurationSelect({
   let menuItems = null;
   if (validConfigurations !== undefined) {
     menuItems = Array.from(validConfigurations).map(
-      ([configurationName, configuration]) => (
-        <MenuItem key={configurationName} value={configurationName}>
-          {configuration.prettyName}
+      ([configurationId, configuration]) => (
+        <MenuItem key={configurationId} value={configurationId}>
+          {configuration.pretty_name}
         </MenuItem>
       ),
     );
@@ -94,11 +97,11 @@ export default function ConfigurationSelect({
 
   return (
     <Box>
-      <FormControl size="medium">
+      <FormControl fullWidth>
         <Select
           id="configuration-select"
           inputProps={{"aria-label": "Select Baseline Configuration"}}
-          value={baselineConfiguration?.name ?? ""}
+          value={baselineConfiguration?.id ?? ""}
           onChange={handleChange}
           onClose={() => {
             setTimeout(() => {
@@ -112,7 +115,6 @@ export default function ConfigurationSelect({
             borderRadius: 1,
             fontWeight: "400",
             fontSize: "1rem",
-            minWidth: 240,
             color: "inherit",
             alignItems: "center",
             "& .MuiSvgIcon-root": {
@@ -124,7 +126,6 @@ export default function ConfigurationSelect({
             disableScrollLock: true,
             PaperProps: {
               sx: {
-                minWidth: 240,
                 boxShadow: "0 25px 50px -12px rgba(18,22,21,0.25)",
                 marginTop: 0.5,
                 "& .MuiMenuItem-root.Mui-selected": {

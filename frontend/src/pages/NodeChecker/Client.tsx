@@ -1,4 +1,8 @@
-import {EvaluationSummary, NodeCheckerClient} from "aptos-node-checker-client";
+import {
+  CheckSummary,
+  ConfigurationDescriptor,
+  NodeCheckerClient,
+} from "aptos-node-checker-client";
 import {GlobalState} from "../../GlobalState";
 
 export const DEFAULT_NHC_INSTANCE = "https://node-checker.dev.gcp.aptosdev.com";
@@ -25,7 +29,7 @@ function getClient(url: string) {
 export async function checkNode({
   nhcUrl,
   nodeUrl,
-  baselineConfigurationName,
+  baselineConfigurationId,
   apiPort,
   noisePort,
   metricsPort,
@@ -33,16 +37,17 @@ export async function checkNode({
 }: {
   nhcUrl: string;
   nodeUrl: string;
-  baselineConfigurationName?: string | undefined;
+  baselineConfigurationId: string;
   apiPort?: number | undefined;
   noisePort?: number | undefined;
   metricsPort?: number | undefined;
   publicKey?: string | undefined;
-}): Promise<EvaluationSummary> {
+}): Promise<CheckSummary> {
+  console.log(`apiPort okay: ${apiPort}`);
   const client = getClient(nhcUrl);
-  return client.default.getCheckNode({
+  return client.default.getCheck({
+    baselineConfigurationId,
     nodeUrl,
-    baselineConfigurationName,
     apiPort,
     noisePort,
     metricsPort,
@@ -50,30 +55,19 @@ export async function checkNode({
   });
 }
 
-export interface MinimalConfiguration {
-  name: string;
-  prettyName: string;
-  evaluators: string[];
-}
-
-// Return map of key to a minimal description of the configuration.
+// Return map of ID to ConfigirationDescriptor.
 export async function getConfigurations({
   nhcUrl,
 }: {
   nhcUrl: string;
-}): Promise<Map<string, MinimalConfiguration>> {
+}): Promise<Map<string, ConfigurationDescriptor>> {
   const client = getClient(nhcUrl);
-  let configurations = await client.default.getGetConfigurations();
-  configurations.sort((a, b) =>
-    a.configuration_name.localeCompare(b.configuration_name),
-  );
-  let out = new Map<string, MinimalConfiguration>();
+  let configurations = await client.default.getConfigurations();
+  console.log(`Configurations are ${JSON.stringify(configurations)}`);
+  configurations.sort((a, b) => a.id.localeCompare(b.id));
+  let out = new Map<string, ConfigurationDescriptor>();
   for (const configuration of configurations) {
-    out.set(configuration.configuration_name, {
-      name: configuration.configuration_name,
-      prettyName: configuration.configuration_name_pretty,
-      evaluators: configuration.evaluators,
-    });
+    out.set(configuration.id, configuration);
   }
   return out;
 }

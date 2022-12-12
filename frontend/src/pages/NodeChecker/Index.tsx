@@ -1,44 +1,44 @@
 import React, {useEffect, useState} from "react";
-import {Button, Grid, Typography} from "@mui/material";
+import {Box, Button, Grid, Typography} from "@mui/material";
 import HeadingSub from "../../components/HeadingSub";
-import {ApiError, EvaluationSummary} from "aptos-node-checker-client";
+import {
+  ApiError,
+  CheckSummary,
+  ConfigurationDescriptor,
+} from "aptos-node-checker-client";
 import useUrlInput from "./hooks/useUrlInput";
 import usePortInput from "./hooks/usePortInput";
 import EvaluationDisplay from "./EvaluationDisplay";
-import {checkNode, determineNhcUrl, MinimalConfiguration} from "./Client";
+import {checkNode, determineNhcUrl} from "./Client";
 import ConfigurationSelect from "./ConfigurationSelect";
 import {useGlobalState} from "../../GlobalState";
 import ErrorSnackbar from "./ErrorSnackbar";
 import useAddressInput from "../../api/hooks/useAddressInput";
 import {useSearchParams} from "react-router-dom";
+import {getRandomLoadingText} from "./hooks/helpers";
 
 export function NodeCheckerPage() {
   const [state, _dispatch] = useGlobalState();
 
   const [checking, updateChecking] = useState<boolean>(false);
-  const [evaluationSummary, updateEvaluationSummary] = useState<
-    EvaluationSummary | undefined
-  >(undefined);
+  const [checkSummary, updateCheckSummary] = useState<CheckSummary | undefined>(
+    undefined,
+  );
   const [baselineConfiguration, updateBaselineConfiguration] = useState<
-    MinimalConfiguration | undefined
+    ConfigurationDescriptor | undefined
   >(undefined);
   const [errorMessage, updateErrorMessage] = useState<string | undefined>(
     undefined,
   );
-  const [publicKeyRequired, setPublicKeyRequired] = useState<boolean>(true);
-  const [metricsPortRequired, setMetricsPortRequired] = useState<boolean>(true);
 
   // Used for getting the text field values from the URL and updating the query params
   // when the user hits the "Check Node" button.
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL text input field.
-  const {
-    url,
-    setUrl,
-    renderUrlTextField,
-    validateUrlInput,
-  } = useUrlInput(searchParams.get("url") || "");
+  const {url, setUrl, renderUrlTextField, validateUrlInput} = useUrlInput(
+    searchParams.get("url") || "",
+  );
 
   // API port text input field.
   const {
@@ -46,7 +46,7 @@ export function NodeCheckerPage() {
     setPort: setApiPort,
     renderPortTextField: renderApiPortTextField,
     validatePortInput: validateApiPortInput,
-  } = usePortInput(searchParams.get("apiPort") || "443");
+  } = usePortInput(searchParams.get("apiPort") || "");
 
   // Noise port text input field.
   const {
@@ -54,7 +54,7 @@ export function NodeCheckerPage() {
     setPort: setNoisePort,
     renderPortTextField: renderNoisePortTextField,
     validatePortInput: validateNoisePortInput,
-  } = usePortInput(searchParams.get("noisePort") || "6180");
+  } = usePortInput(searchParams.get("noisePort") || "");
 
   // Metrics port text input field.
   const {
@@ -62,7 +62,7 @@ export function NodeCheckerPage() {
     setPort: setMetricsPort,
     renderPortTextField: renderMetricsPortTextField,
     validatePortInput: validateMetricsPortInput,
-  } = usePortInput(searchParams.get("metricsPort") || "9101");
+  } = usePortInput(searchParams.get("metricsPort") || "");
 
   // Public key text input field.
   const {
@@ -79,12 +79,8 @@ export function NodeCheckerPage() {
     const urlIsValid = validateUrlInput();
     const apiPortIsValid = validateApiPortInput();
     const noisePortIsValid = validateNoisePortInput();
-    const metricsPortIsValid = metricsPortRequired
-      ? validateMetricsPortInput()
-      : true;
-    const publicKeyIsValid = publicKeyRequired
-      ? validatePublicKeyAddressInput()
-      : true;
+    const metricsPortIsValid = validateMetricsPortInput();
+    const publicKeyIsValid = validatePublicKeyAddressInput();
     return (
       urlIsValid &&
       apiPortIsValid &&
@@ -98,12 +94,9 @@ export function NodeCheckerPage() {
   // Wrapper around updateBaselineConfiguration that also handles whether
   // the public key field is required.
   const updateBaselineConfigurationWrapper = (
-    configuration: MinimalConfiguration | undefined,
+    configuration: ConfigurationDescriptor | undefined,
   ) => {
     updateBaselineConfiguration(configuration);
-    const evaluators = configuration?.evaluators ?? [];
-    setPublicKeyRequired(evaluators.includes("noise_handshake"));
-    setMetricsPortRequired((configuration?.name ?? "").includes("with_metrics"));
   };
 
   const onCheckNodeButtonClick = async () => {
@@ -114,6 +107,7 @@ export function NodeCheckerPage() {
       return;
     }
     updateChecking(true);
+    updateCheckSummary(undefined);
     setSearchParams({
       network: state.network_name,
       url: url,
@@ -121,20 +115,21 @@ export function NodeCheckerPage() {
       noisePort: noisePort,
       metricsPort: metricsPort,
       publicKey: publicKey,
-      baselineConfiguration: baselineConfiguration!.name,
+      baselineConfig: baselineConfiguration!.id,
     });
     try {
-      const evaluationSummary = await checkNode({
+      console.log(`apiPort: ${apiPort}`);
+      const checkSummary = await checkNode({
         nhcUrl: nhcUrl,
         nodeUrl: url,
-        baselineConfigurationName: baselineConfiguration!.name,
+        baselineConfigurationId: baselineConfiguration!.id,
         // TODO: Somehow make these port values numbers to begin with.
-        apiPort: parseInt(apiPort),
-        noisePort: parseInt(noisePort),
-        metricsPort: metricsPortRequired ? parseInt(metricsPort) : undefined,
-        publicKey: publicKey == "" ? undefined : publicKey,
+        apiPort: apiPort === "" ? undefined : parseInt(apiPort),
+        noisePort: noisePort === "" ? undefined : parseInt(noisePort),
+        metricsPort: metricsPort === "" ? undefined : parseInt(metricsPort),
+        publicKey: publicKey === "" ? undefined : publicKey,
       });
-      updateEvaluationSummary(evaluationSummary);
+      updateCheckSummary(checkSummary);
       updateErrorMessage(undefined);
     } catch (e) {
       let msg = `Failed to check node: ${e}`;
@@ -149,35 +144,14 @@ export function NodeCheckerPage() {
   // Clear the results if the user changes the network or the search params.
   // Update the fields.
   useEffect(() => {
-    updateEvaluationSummary(undefined);
+    updateCheckSummary(undefined);
     updateErrorMessage(undefined);
     setUrl(searchParams.get("url") || "");
-    setApiPort(searchParams.get("apiPort") || "443");
-    setNoisePort(searchParams.get("noisePort") || "6180");
-    setMetricsPort(searchParams.get("metricsPort") || "9101");
+    setApiPort(searchParams.get("apiPort") || "");
+    setNoisePort(searchParams.get("noisePort") || "");
+    setMetricsPort(searchParams.get("metricsPort") || "");
     setPublicKey(searchParams.get("publicKey") || "");
   }, [state.network_name, searchParams]);
-
-  // Conditionally build an input field for the public key if the selected
-  // baseline configuration has an evaluator that requires it.
-  let publicKeyInput = null;
-  if (publicKeyRequired) {
-    publicKeyInput = (
-      <Grid item md={12}>
-        {renderPublicKeyTextField("Public Key")}
-      </Grid>
-    );
-  }
-
-  // Same for the metrics port input.
-  let metricsPortInput = null;
-  if (metricsPortRequired) {
-    metricsPortInput = (
-      <Grid item md={1.1} xs={12}>
-        {renderMetricsPortTextField("Metrics Port")}
-      </Grid>
-    );
-  }
 
   // Build the check node button, which could be disabled if we're actively
   // waiting for a response from the server.
@@ -195,11 +169,34 @@ export function NodeCheckerPage() {
   );
 
   // Build a display of the evaluation summary if one has been received.
-  let evaluationDisplay = null;
-  if (evaluationSummary !== undefined) {
+  // Otherwise display some info about how to make a request. TODO: Update the link here.
+  let evaluationDisplay;
+  if (checkSummary === undefined) {
+    let inner;
+    if (checking) {
+      inner = <p>{getRandomLoadingText()}</p>;
+    } else {
+      inner = (
+        <p>
+          Only the node URL is required, other fields are only necessary if you
+          want to check that component.{" "}
+          <a href="https://github.com/aptos-labs/aptos-core/pull/5784">
+            Learn more
+          </a>
+          .
+        </p>
+      );
+    }
     evaluationDisplay = (
-      <EvaluationDisplay evaluationSummary={evaluationSummary!} />
+      <Box>
+        <Box pt={3} />
+        <Grid container justifyContent="center">
+          {inner}
+        </Grid>
+      </Box>
     );
+  } else {
+    evaluationDisplay = <EvaluationDisplay checkSummary={checkSummary!} />;
   }
 
   return (
@@ -217,22 +214,26 @@ export function NodeCheckerPage() {
           <Grid item md={5} xs={12}>
             {renderUrlTextField("Node URL")}
           </Grid>
-          <Grid item md={1.1} xs={12}>
+          <Grid item md={1.4} xs={12}>
             {renderApiPortTextField("API Port")}
           </Grid>
-          <Grid item md={1.1} xs={12}>
+          <Grid item md={1.4} xs={12}>
             {renderNoisePortTextField("Noise Port")}
           </Grid>
-          <Grid item md={3.5} xs={12}>
+          <Grid item md={1.4} xs={12}>
+            {renderMetricsPortTextField("Metrics Port")}
+          </Grid>
+          <Grid item md={2.8} xs={12}>
             <ConfigurationSelect
               baselineConfiguration={baselineConfiguration}
               updateBaselineConfiguration={updateBaselineConfigurationWrapper}
               updateErrorMessage={updateErrorMessage}
             />
           </Grid>
-          {metricsPortInput}
-          {publicKeyInput}
-          <Grid item xs={12}>
+          <Grid item md={6} xs={12}>
+            {renderPublicKeyTextField("Public Key")}
+          </Grid>
+          <Grid item md={6} xs={12}>
             {checkNodeButton}
           </Grid>
         </Grid>

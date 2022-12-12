@@ -8,10 +8,10 @@ import {
   useTheme,
   Button,
 } from "@mui/material";
-import {EvaluationSummary} from "aptos-node-checker-client";
+import {CheckSummary} from "aptos-node-checker-client";
 
 interface EvaluationDisplayProps {
-  evaluationSummary: EvaluationSummary;
+  checkSummary: CheckSummary;
 }
 
 type CardBoxProps = {
@@ -21,7 +21,7 @@ type CardBoxProps = {
 };
 
 export default function EvaluationDisplay({
-  evaluationSummary,
+  checkSummary,
 }: EvaluationDisplayProps) {
   const theme = useTheme();
 
@@ -71,7 +71,7 @@ export default function EvaluationDisplay({
   };
 
   // Get grid components for each element in the evaluation summary results.
-  const results = evaluationSummary.evaluation_results.map((result, index) => {
+  const results = checkSummary.check_results.map((result, index) => {
     return (
       <Grid item xs={12} md={6} lg={4} key={index}>
         <CardBox
@@ -85,14 +85,14 @@ export default function EvaluationDisplay({
 
   return (
     <Box marginX={6}>
-      <Grid md={12}>
+      <Grid item md={12}>
         <Typography
           variant="h4"
           marginTop={5}
           marginBottom={6}
           textAlign="center"
         >
-          {evaluationSummary.summary_explanation}
+          {checkSummary.summary_explanation}
         </Typography>
         <Grid container spacing={4} justifyContent="center">
           {results}
