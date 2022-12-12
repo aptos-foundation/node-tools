@@ -30,7 +30,7 @@ const useAddressInput = (initialValue: string) => {
   }
 
   function validateAddressInput(): boolean {
-    const isValid = isValidAccountAddress(addr);
+    const isValid = addr === "" || isValidAccountAddress(addr);
     setAddrIsValid(isValid);
     return isValid;
   }
