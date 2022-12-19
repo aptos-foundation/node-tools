@@ -81,12 +81,18 @@ export function NodeCheckerPage() {
     const noisePortIsValid = validateNoisePortInput();
     const metricsPortIsValid = validateMetricsPortInput();
     const publicKeyIsValid = validatePublicKeyAddressInput();
+    const noisePortSetIfPublicKeySet = noisePort !== "" || publicKey === "";
+    const atLeastOnePortIsSet =
+      apiPort !== "" || noisePort !== "" || metricsPort !== "";
+    // Return an explanation as to why the input is invalid.
     return (
       urlIsValid &&
       apiPortIsValid &&
       noisePortIsValid &&
-      publicKeyIsValid &&
       metricsPortIsValid &&
+      publicKeyIsValid &&
+      atLeastOnePortIsSet &&
+      noisePortSetIfPublicKeySet &&
       baselineConfiguration !== undefined
     );
   };
@@ -174,25 +180,32 @@ export function NodeCheckerPage() {
   if (checkSummary === undefined) {
     let inner;
     if (checking) {
-      inner = <p>{getRandomLoadingText()}</p>;
+      inner = (
+        <Grid container justifyContent="center">
+          <p>{getRandomLoadingText()}</p>
+        </Grid>
+      );
     } else {
       inner = (
-        <p>
-          Only the node URL is required, other fields are only necessary if you
-          want to check that component.{" "}
-          <a href="https://github.com/aptos-labs/aptos-core/pull/5784">
-            Learn more
-          </a>
-          .
-        </p>
+        <>
+          <Grid container justifyContent="center">
+            <p>
+              Only the node URL is required, other fields are only necessary if
+              you want to run checks that use that field.{" "}
+            </p>
+          </Grid>
+          <Grid container justifyContent="center">
+            <a href="https://github.com/aptos-labs/aptos-core/pull/5784">
+              Learn more
+            </a>
+          </Grid>
+        </>
       );
     }
     evaluationDisplay = (
       <Box>
         <Box pt={3} />
-        <Grid container justifyContent="center">
-          {inner}
-        </Grid>
+        {inner}
       </Box>
     );
   } else {
